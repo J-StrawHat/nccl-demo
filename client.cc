@@ -1,6 +1,10 @@
 #include "util.h"
 
 int main(int argc, char *argv[]) {
+    int version;
+    NCCLCHECK(ncclGetVersion(&version));
+    printf("NCCL version: %d\n", version);
+
     // Initialize client socket
     const char* server_ip = (argc > 1) ? argv[1] : SERVER_IP;
     int sock = 0;
@@ -61,6 +65,14 @@ int main(int argc, char *argv[]) {
         NCCLCHECK(ncclCommInitRank(comms + devID, nRanks, id, baseRank + devID));
     }
     NCCLCHECK(ncclGroupEnd());
+
+    for (int devID = 0; devID < GPUS_NUM; devID++) {
+        int count, device, userRank;
+        NCCLCHECK(ncclCommCount(comms[devID], &count));
+        NCCLCHECK(ncclCommCuDevice(comms[devID], &device));
+        NCCLCHECK(ncclCommUserRank(comms[devID], &userRank));
+        printf("comm: %p, CUDADevice: %d, userRank: %d, nRanks: %d\n", comms[devID], device, userRank, count);
+    }
 
     // NCCL communication
     NCCLCHECK(ncclGroupStart());

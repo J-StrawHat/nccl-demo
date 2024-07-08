@@ -46,4 +46,20 @@ static void PrintBuffer(void** devBuff) {
         }
         printf("\n");
     }
+    free(hostBuff);
+}
+
+static void PrintBuffer(void** devBuff, size_t cnt) {
+    float* hostBuff = (float*)malloc(cnt * sizeof(float));
+    for (int devID = 0; devID < GPUS_NUM; devID++) {
+        printf("GPU[%d]", devID);
+        CUDACHECK(cudaSetDevice(devID));
+        CUDACHECK(cudaMemcpy(hostBuff, devBuff[devID], cnt * sizeof(float), cudaMemcpyDeviceToHost));
+
+        for(int i = 0; i < cnt; i++) {
+            printf("%f ", hostBuff[i]);
+        }
+        printf("\n");
+    }
+    free(hostBuff);
 }
